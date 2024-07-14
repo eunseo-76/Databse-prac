@@ -98,6 +98,18 @@ GROUP BY a.category_code, b.category_name
 -- HAVING AVG(a.menu_price) <= 10000;
 HAVING 메뉴가격평균  <= 10000;
 
+SELECT
+		 a.category_code
+		,b.category_name
+		,AVG(a.menu_price) 메뉴가격평균
+  FROM tbl_menu a
+  JOIN tbl_category b ON (a.category_code = b.category_code)
+GROUP BY a.category_code, b.category_name
+WHERE 메뉴가격평균  <= 10000; -- where 절 때문에 실행 x
+-- where 절은 group by가 실행되기 전에 각 행을 필터링할 때 사용됨
+-- having 절은 group by가 수행된 후 그 결과를 필터링할 때 사용됨
+
+
 -- select : 조회 컬럼
 -- from : 조회 대상 테이블
 -- join : 조회 대상 테이블
@@ -106,7 +118,7 @@ HAVING 메뉴가격평균  <= 10000;
 -- having : 그루핑 결과를 조건으로 필터링
 -- order by : 정렬 기준
 
--- 집계 함수 rollip
+-- 집계 함수 rollup
 -- 컬럼 한 개를 활용했을 경우
 SELECT
 		 category_code
