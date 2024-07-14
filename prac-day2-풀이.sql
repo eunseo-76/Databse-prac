@@ -88,6 +88,8 @@ SELECT
   JOIN location l ON d.location_id = l.local_code
   JOIN national n ON l.NATIONAL_CODE = n.national_code -- location과location 조인 (national 위함)
  WHERE l.national_code IN ('KO','JP');
+ 
+ 
 
 
 -- 7. 보너스포인트가 없는 직원들 중에서 직급코드가 J4와 J7인 직원들의 사원명, 직급명, 급여를 조회하시오.
