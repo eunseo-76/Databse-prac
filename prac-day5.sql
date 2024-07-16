@@ -1,7 +1,7 @@
 -- q1
 -- 전화번호가 010으로 시작하는 직원의 직원명과 전화번호를 다음과 같이 출력하세요.
 
--- 내 답안
+-- 내 답안(1)
 SELECT
 		 emp_name AS EMP_NAME
 	  , CONCAT_WS('-'
@@ -11,6 +11,15 @@ SELECT
   FROM employee
  WHERE phone LIKE '010%';
  
+-- 내 답안(2)
+SELECT
+		 emp_name AS EMP_NAME
+	  , CONCAT(SUBSTRING(phone, 1, 3), '-'
+			   , SUBSTRING(phone, 4, 4), '-'
+			   , SUBSTRING(phone, 8, 4)) AS PHONE
+  FROM employee
+ WHERE phone LIKE '010%';
+
 -- 답안
 SELECT 
 	emp_name,
@@ -28,16 +37,28 @@ WHERE
 -- 입사일은 ‘0000년 00월 00일’ 형식으로 출력해야 함
 -- 급여는 천 단위로 , 를 찍어 출력해야 함
 
--- 내 답안
+
+-- 내 답안(1)
 SELECT
 		 emp_name AS 직원명
-	  , concat(SUBSTRING(hire_date, 1, 4), '년 '
+	  , concat(SUBSTRING(hire_date, 1, 4), '년 ' -- 1자리 월, 일의 0 제거 x
 				, SUBSTRING(hire_date, 6, 2), '월 '
 				, SUBSTRING(hire_Date, 9, 2), '일'
 		  ) AS 입사
 	  , FORMAT(salary, 0) AS 급여
   FROM employee;
- ORDER BY hire_date ASC;
+ ORDER BY hire_date ASC; -- 20년 근속 조건 x, 입사일이 같으면 급여 높은 순서 x
+
+-- 내 답안(2)
+SELECT
+		 emp_name AS 직원명
+	  , CONCAT(YEAR(hire_date), '년 '
+	         , MONTH(hire_date), '월 '
+	         , DAY(hire_date), '일 ') AS 입사일
+	  , salary AS 급여 -- 급여 천 단위 x
+  FROM employee
+ WHERE DATEDIFF(DATE(NOW()), hire_date) >= 20*365
+ ORDER BY hire_date ASC; -- 입사일이 같으면 급여 높은 순서 x
  
 -- 답안
 SELECT 
@@ -51,6 +72,17 @@ WHERE
 ORDER BY 
 	hire_date, salary DESC;
 
+-- 내 답안(3)
+SELECT
+		 emp_name AS 직원명
+	  , CONCAT(YEAR(hire_date), '년 '
+	         , MONTH(hire_date), '월 '
+	         , DAY(hire_date), '일 ') AS 입사일
+	  , FORMAT(salary, 0) AS 급여
+  FROM employee
+ WHERE DATEDIFF(DATE(NOW()), hire_date) >= 20*365
+ ORDER BY hire_date ASC, salary DESC;
+
 
 -- q3
 -- 모든 직원의 직원명, 급여, 보너스, 급여에 보너스를 더한 금액을 다음과 같이 출력하세요.
@@ -61,23 +93,27 @@ ORDER BY
 -- 급여와 보너스를 더한 급여는 천 단위로 , 를 찍어 출력해야 함
 -- 보너스는 백분율로 출력해야 함
 
--- 내 답안
+-- 내 답안(1)
 SELECT
 		 emp_name AS EMP_NAME
 	  , salary AS SALARY
 	  , concat(TRUNCATE(IFNULL(bonus, 0)*100, 0), '%') AS BONUS
-	  , FORMAT(salary * (IFNULL(bonus, 0) + 1), 0) AS TOTAL_SALARY
+	  , FORMAT(salary * (IFNULL(bonus, 0) + 1), 0) AS TOTAL_SALARY -- 급여 소수점 반올림 안 됨, bonus null 없어짐
   FROM employee
  ORDER BY TOTAL_SALARY DESC;
- 
- SELECT
+
+-- 내 답안(2)
+SELECT
 		 emp_name AS EMP_NAME
 	  , salary AS SALARY
-	  , concat(TRUNCATE(bonus * 100, 0), '%') AS BONUS
-	  , FORMAT(salary * (IFNULL(bonus, 0) + 1), 0) AS TOTAL_SALARY
+	  , CONCAT(FORMAT(bonus * 100, 0), '%') AS BONUS
+	  , salary + bonus AS TOTAL_SALARY
   FROM employee
- ORDER BY TOTAL_SALARY DESC;
- 
+ ORDER BY total_salary DESC;
+
+-- total_salary = salary * (bonus + 1)
+-- bonus = bonus * 100 %
+
 -- 답안
 SELECT 
 	emp_name,

@@ -151,7 +151,6 @@ SELECT NOW(), LOCALTIME, LOCALTIME(), LOCALTIMESTAMP, LOCALTIMESTAMP();
 SELECT YEAR(CURDATE()), MONTH(CURDATE()), DAYOFMONTH(CURDATE());
 
 -- hour, minute, second, microsecond
--- microsecond 사용법 잘못 된 듯.. 다시 알려준다고 하심
 SELECT HOUR(CURTIME()), MINUTE(CURTIME()), SECOND(CURTIME()), MICROSECOND(CURTIME(6));
 -- curtime은 인자가 없으면 시분초로 초 단위까지만 반환함
 -- ms 단위까지 원한다면 인자를 써야함
