@@ -107,9 +107,11 @@ SELECT
 		 emp_name AS EMP_NAME
 	  , salary AS SALARY
 	  , CONCAT(FORMAT(bonus * 100, 0), '%') AS BONUS
+	  , bonus AS bonus
 	  , salary + bonus AS TOTAL_SALARY
+	  , format(salary * ((IFNULL(bonus, 0), 0) + 1), 0) AS TOTAL_SALARY
   FROM employee
- ORDER BY total_salary DESC;
+ ORDER BY salary * ((IFNULL(bonus, 0), 0) + 1) DESC;
 
 -- total_salary = salary * (bonus + 1)
 -- bonus = bonus * 100 %
