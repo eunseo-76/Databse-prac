@@ -1,0 +1,134 @@
+-- TEST1. USER 테이블 - USER_GENDER에 M, F가 아닌 값이 들어가는 경우
+
+INSERT INTO user
+  VALUES
+ (NULL, 'test1@gmail.com', 'tttt', 'test1', '테스트1', 'X', '1985-11-12', '010-4444-4444', 0, 0, 1);
+ 
+-- RESULT: USER_GENDER에 X 값이 그대로 들어감
+
+-- SOLUTION : USER_GENDER 에 CHECK IN 함수 넣음
+CREATE TABLE IF NOT EXISTS `USER`
+(
+    `USER_ID`    INT NOT NULL AUTO_INCREMENT COMMENT '사용자ID',
+    `USER_EMAIL`    VARCHAR(100) NOT NULL COMMENT '사용자이메일',
+    `USER_PW`    VARCHAR(255) NOT NULL COMMENT '비밀번호',
+    `USER_NICKNAME`    VARCHAR(30) NOT NULL COMMENT '닉네임',
+    `USER_NAME`    VARCHAR(255) NOT NULL COMMENT '이름',
+    `USER_GENDER`    CHAR(1) NOT NULL COMMENT '성별',
+    CHECK (USER_GENDER IN ('M', 'F')),
+    `USER_BIRTH`    DATE NOT NULL COMMENT '생년월일',
+    `USER_PHONE`    VARCHAR(13) NOT NULL COMMENT '휴대폰번호',
+    `USER_AUTH`    BOOLEAN NOT NULL DEFAULT '1' COMMENT '권한',
+    `IS_NOTIFIED`    BOOLEAN DEFAULT '1' NOT NULL COMMENT '알림수신여부',
+    `IS_ACTIVE`    BOOLEAN DEFAULT '1' NOT NULL COMMENT '탈퇴여부',
+ PRIMARY KEY ( `USER_ID` )
+) COMMENT = '사용자';
+
+-- RESULT: USER_GENDER 에 M, F 값만 들어감
+
+-- TEST2. USER 테이블에 INSERT
+
+-- TEST3. USER 테이블 UPDATE
+
+-- TEST4. 탈퇴한 USER는 알림수신여부를 0으로 설정하는 트리거 생성
+-- 4-1. 트리거 생성
+
+
+DELIMITER // 
+
+CREATE OR REPLACE TRIGGER INACTIVE_USER_UNNOTIFIED
+    AFTER UPDATE ON `USER`
+    FOR EACH ROW
+BEGIN
+	IF NEW.IS_ACTIVE = 0 AND OLD.IS_NOTIFIED = 1 THEN -- IF 알림 수신을 받는 사용자가 탈퇴하면
+		UPDATE `USER`
+		SET `IS_NOTIFIED` = 0
+		WHERE `USER_ID` = NEW.USER_ID;
+	END IF;
+END//
+
+DELIMITER ;
+
+SHOW TRIGGERS; -- 트리거 생성 확인
+DROP TRIGGER IF EXISTS INACTIVE_USER_UNNOTIFIED; -- 트리거 삭제(테스트용)
+
+-- 4-2. USER 탈퇴 시키는 UPDATE 쿼리
+-- IS_ACTIVE, IS_NOTIFIED = 1인 USER_ID=10의 IS_ACTIVE를 0으로 변경하여, 트리거가 발동되는지(IS_NOTIFIED=0) 확인
+UPDATE USER
+  SET IS_ACTIVE = 0
+ WHERE USER_ID = 10;
+ 
+-- 같은 테이블 내에서는 trigger로 update 불가 오류
+-- stored procedure를 생성하여 trigger 실행 시 작동하도록 수정
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateUserNotificationStatus(IN userId INT)
+BEGIN
+    UPDATE `USER`
+    SET `IS_NOTIFIED` = 0
+    WHERE `USER_ID` = userId;
+END//
+
+DELIMITER ;
+
+SHOW PROCEDURE STATUS;
+SHOW TRIGGERS;
+DROP PROCEDURE if EXISTS UpdateUserNotificationStatus;
+
+DELIMITER //
+
+CREATE OR REPLACE TRIGGER INACTIVE_USER_UNNOTIFIED
+    AFTER UPDATE ON `USER`
+    FOR EACH ROW
+BEGIN
+	IF NEW.IS_ACTIVE = 0 AND OLD.IS_NOTIFIED = 1 THEN
+		CALL UpdateUserNotificationStatus(NEW.USER_ID);
+	END IF;
+END//
+
+DELIMITER ;
+
+UPDATE USER
+  SET IS_ACTIVE = 0
+ WHERE USER_ID = 10;
+ 
+-- stored procedure도 안 됨... trigger를 after 대신 before로 바꾸기 - 된 듯?!
+
+-- TRIGGER 생성
+DELIMITER // 
+
+CREATE OR REPLACE TRIGGER INACTIVE_USER_UNNOTIFIED
+    BEFORE UPDATE ON `USER`
+    FOR EACH ROW
+BEGIN
+	IF NEW.IS_ACTIVE = 0 AND OLD.IS_NOTIFIED = 1 THEN -- IF 알림 수신을 받는 사용자가 탈퇴하면
+		SET NEW.`IS_NOTIFIED` = 0;
+	END IF;
+END//
+
+DELIMITER ;
+
+-- USER를 탈퇴시키는 UPDATE문
+UPDATE USER
+  SET IS_ACTIVE = 0
+ WHERE USER_ID = 10;
+-- 결과 확인(IS_ACTIVE, IS_NOTIFIED = 0 변경됨)
+SELECT * FROM USER WHERE USER_ID = 10;
+
+SHOW TRIGGERS; -- 트리거 생성 확인
+DROP TRIGGER IF EXISTS INACTIVE_USER_UNNOTIFIED; -- 트리거 삭제(테스트용)
+
+
+UPDATE user
+  SET IS_ACTIVE = 1, IS_NOTIFIED = 1
+ WHERE USER_ID = 10;
+ 
+ 
+ 
+-- 같은 테이블에서는 trigger를 사용하지 않는 게 맞다고 한다. (이런...)
+-- 애초에 update 할 때 함께 바꾸는 게 맞다고...
+
+UPDATE user
+  SET is_active = 0, is_notified = 0
+ WHERE user_id = 10;
