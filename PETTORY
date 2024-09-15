@@ -1,12 +1,43 @@
 USE pettory;
 
-CREATE TABLE IF NOT EXISTS USER(
+CREATE TABLE IF NOT EXISTS user(
 
 		  user_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '회원id'
+		, family_id	INT COMMENT '가족id'	-- FK
 		, user_email	VARCHAR(255) NOT NULL COMMENT '회원이메일'
 		, user_nickname	VARCHAR(50) NOT NULL COMMENT '회원닉네임'
 		, user_password	VARCHAR(255) NOT NULL COMMENT '회원비밀번호'
 		, user_name	VARCHAR(50) NOT NULL COMMENT '회원이름'
 		, user_birth	DATE NOT NULL COMMENT '회원생년월일'
-		, 
-)
+		, user_activation_state	CHAR(1) NOT NULL COMMENT '회원활성화여부'
+		, user_vet_yn	BOOLEAN NOT NULL DEFAULT 'N' COMMENT '회원수의사여부'
+		, user_walking_record_public_yn	BOOLEAN NOT NULL DEFAULT 'Y' COMMENT '회원산책기록공개여부'
+		, user_hospital_info	VARCHAR(50)	COMMENT '회원병원정보'
+)  COMMENT '회원';
+
+CREATE TABLE IF NOT EXISTS family(
+		  family_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '가족id'
+		, family_name	VARCHAR(50) NOT NULL COMMENT '가족이름'
+) COMMENT '가족';
+
+CREATE TABLE IF NOT EXISTS pet(
+		  pet_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '반려동물id'
+		, user_id	INT NOT NULL COMMENT '회원id'		-- FK
+		, family_id	INT COMMENT '가족id'	-- FK
+		, pet_name	VARCHAR(50) NOT NULL COMMENT '반려동물이름'
+		, pet_breed	VARCHAR(50) NOT NULL COMMENT '반려동물종'
+		, pet_gender	CHAR(1) NOT NULL COMMENT '반려동물성별'
+		, pet_neutering	CHAR(1) NOT NULL COMMENT '반려동물중성화여부'
+		, pet_memo	LONGTEXT COMMENT '반려동물메모'
+) COMMENT '반려동물';
+
+CREATE TABLE IF NOT EXISTS symptom_record(
+		  sympton_record_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '증상기록id'
+		, pet_id	INT NOT NULL COMMENT '반려동물id'
+		, symptom_record_datetime	DATETIME NOT NULL COMMENT '증상일시'
+		, symptom_record_type	VARCHAR(50) NOT NULL COMMENT '증상종류'
+		, symptom_record_time	VARCHAR(50) COMMENT '증상지속시간'
+		, symptom_record_count	VARCHAR(50) COMMENT '증상횟수'
+		, symptom_record_image	VARCHAR(255) COMMENT '증상사진'
+		, symptom_record_memo	LONGTEXT COMMENT '메모'
+) COMMENT '증상기록';
