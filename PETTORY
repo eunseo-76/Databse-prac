@@ -1,0 +1,12 @@
+USE pettory;
+
+CREATE TABLE IF NOT EXISTS USER(
+
+		  user_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '회원id'
+		, user_email	VARCHAR(255) NOT NULL COMMENT '회원이메일'
+		, user_nickname	VARCHAR(50) NOT NULL COMMENT '회원닉네임'
+		, user_password	VARCHAR(255) NOT NULL COMMENT '회원비밀번호'
+		, user_name	VARCHAR(50) NOT NULL COMMENT '회원이름'
+		, user_birth	DATE NOT NULL COMMENT '회원생년월일'
+		, 
+)
