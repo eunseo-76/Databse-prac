@@ -1,0 +1,257 @@
+USE pettory;
+
+-- 테이블 삭제
+DROP TABLE IF EXISTS symptom_record CASCADE;
+DROP TABLE IF EXISTS take_medicine_record CASCADE;
+DROP TABLE IF EXISTS prescription_info CASCADE;
+DROP TABLE IF EXISTS walking_record CASCADE;
+DROP TABLE IF EXISTS feeding_record CASCADE;
+DROP TABLE IF EXISTS pet CASCADE;
+DROP TABLE IF EXISTS user CASCADE;
+DROP TABLE IF EXISTS family CASCADE;
+
+-- 테이블 생성
+CREATE TABLE IF NOT EXISTS user(
+		  user_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '회원id'
+		, family_id	INT COMMENT '가족id'	-- FK
+		, user_email	VARCHAR(255) NOT NULL COMMENT '회원이메일'
+		, user_nickname	VARCHAR(50) NOT NULL COMMENT '회원닉네임'
+		, user_password	VARCHAR(255) NOT NULL COMMENT '회원비밀번호'
+		, user_name	VARCHAR(50) NOT NULL COMMENT '회원이름'
+		, user_birth	DATE NOT NULL COMMENT '회원생년월일'
+		, user_activation_state	CHAR(1) NOT NULL DEFAULT 'A' COMMENT '회원활성화여부' -- A(Activated), S(Suspended), W(Withdrawn)
+		, user_vet_yn TINYINT(1) NOT NULL DEFAULT 0 COMMENT '회원수의사여부'
+		, user_walking_record_public_yn	TINYINT(1) NOT NULL DEFAULT 1 COMMENT '회원산책기록공개여부'	-- 비공개 0, 공개 1
+		, user_hospital_info	VARCHAR(50)	COMMENT '회원병원정보'
+		, user_register_datetime	DATETIME NOT NULL COMMENT '회원등록일시'
+		, user_withdraw_datetime	DATETIME COMMENT '회원탈퇴일시'
+) ENGINE=INNODB COMMENT '회원';
+
+CREATE TABLE IF NOT EXISTS family(
+		  family_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '가족id'
+		, family_name	VARCHAR(50) NOT NULL COMMENT '가족이름'
+		, family_insert_datetime	DATETIME NOT NULL COMMENT '가족등록일시'
+		, family_delete_datetime	DATETIME COMMENT '가족삭제일시'
+		, family_state	CHAR(1) NOT NULL DEFAULT 'A' COMMENT '가족상태'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '가족';
+
+CREATE TABLE IF NOT EXISTS pet(
+		  pet_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '반려동물id'
+		, user_id	INT NOT NULL COMMENT '회원id'		-- FK
+		, family_id	INT COMMENT '가족id'	-- FK
+		, pet_type	CHAR(1) NOT NULL COMMENT '반려동물종류'	-- D(개), C(고양이)
+		, pet_name	VARCHAR(50) NOT NULL COMMENT '반려동물이름'
+		, pet_breed	VARCHAR(50) NOT NULL COMMENT '반려동물종'
+		, pet_birth	DATE COMMENT '반려동물생년월일'
+		, pet_gender	CHAR(1) NOT NULL COMMENT '반려동물성별'
+		, pet_neutering	TINYINT(1) NOT NULL COMMENT '반려동물중성화여부'
+		, pet_weight INT NOT NULL COMMENT '반려동물무게'
+		, pet_memo	LONGTEXT COMMENT '반려동물메모'
+		, pet_insert_datetime	DATETIME NOT NULL COMMENT '반려동물등록일시'
+		, pet_delete_datetime	DATETIME COMMENT '반려동물삭제일시'
+		, pet_state	CHAR(1) NOT NULL DEFAULT 'A' COMMENT '반려동물상태'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '반려동물';
+
+CREATE TABLE IF NOT EXISTS symptom_record(
+		  sympton_record_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '증상기록id'
+		, pet_id	INT NOT NULL COMMENT '반려동물id'	-- FK
+		, symptom_record_datetime	DATETIME NOT NULL COMMENT '증상기록등록일시'
+		, symptom_record_type	VARCHAR(50) NOT NULL COMMENT '증상종류'
+		, symptom_record_time	VARCHAR(50) COMMENT '증상지속시간'
+		, symptom_record_count	VARCHAR(50) COMMENT '증상횟수'
+		, symptom_record_image	VARCHAR(255) COMMENT '증상사진'
+		, symptom_record_memo	LONGTEXT COMMENT '메모'
+		, symptom_record_delete_datetime	DATETIME COMMENT '증상기록삭제일시'
+		, symptom_record_state	CHAR(1) NOT NULL DEFAULT 'A'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '증상기록';
+
+CREATE TABLE IF NOT EXISTS prescription_info(
+		  prescription_info_medicine_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '처방정보'
+		, user_id INT NOT NULL COMMENT '회원id'
+		, prescription_info_hospital_name	VARCHAR(50) COMMENT '처방병원이름'
+		, prescription_info_pharmacy_name	VARCHAR(50) COMMENT '처방정보약국이름'
+		, prescription_info_medicine_name	VARCHAR(50) NOT NULL COMMENT '처방정보약이름'
+		, prescription_info_medicine_type	VARCHAR(50) COMMENT '처방정보약종류'
+		, prescription_info_take_medicine_point	VARCHAR(50) COMMENT '처방정복욕시점'
+		, prescription_info_take_medicine_amount	VARCHAR(50) COMMENT '처방정보복욕량'
+		, prescription_info_take_medicine_type	VARCHAR(50) COMMENT '처방정보복용종류'
+		, prescription_info_insert_datetime	DATETIME NOT NULL COMMENT '처방정보등록일시'
+		, prescription_info_delete_datetime	DATETIME COMMENT '처방정보삭제일시'
+		, prescription_info_state	CHAR(1) NOT NULL DEFAULT 'A'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '처방정보'
+
+CREATE TABLE IF NOT EXISTS take_medicine_record(
+		  take_medicine_record_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '복약기록id'
+		, prescription_info_medicine_id	INT NOT NULL COMMENT '처방정보약id'	-- FK
+		, pet_id	INT NOT NULL COMMENT '반려동물id'	-- FK
+		, take_medicine_memo	LONGTEXT COMMENT '복약기록메모'
+		, take_medicine_record_insert_datetime	DATETIME NOT NULL COMMENT '복약기록등록일시'
+		, take_medicine_record_delete_datetime	DATETIME COMMENT '복약기록삭제일시'
+		, take_medicine_record_state	CHAR(1) NOT NULL DEFAULT 'A'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '복약기록'
+
+CREATE TABLE IF NOT EXISTS walking_record(
+		  walking_record_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '산책기록id'
+		, pet_id	INT NOT NULL COMMENT '반려동물id'	-- FK
+		, walking_record_date	DATE NOT NULL COMMENT '산책기록날짜'
+		, walking_record_duration	INT COMMENT '산책기록경과시간'
+		, walking_record_poop_count	INT COMMENT '산책기록배변횟수'
+		, walking_record_amount	VARCHAR(50) COMMENT '산책기록음수량'
+		, walking_record_memo	LONGTEXT COMMENT '산책기록메모'
+		, walking_record_image	VARCHAR(255) COMMENT '산책기록사진'
+		, walking_record_color	VARCHAR(50) COMMENT '산책기록색상'
+		, walking_record_insert_datetime	DATETIME NOT NULL COMMENT '산책기록등록일시'
+		, walking_record_delete_datetime	DATETIME COMMENT '산책기록삭제일시'
+		, walking_record_state	CHAR(1) NOT NULL DEFAULT 'A'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '산책기록'
+
+CREATE TABLE IF NOT EXISTS feeding_record(
+		  feeding_record_id	INT AUTO_INCREMENT NOT NULL PRIMARY KEY COMMENT '급여기록id'
+		, pet_id	INT NOT NULL COMMENT '반려동물id'	-- FK
+		, feeding_record_feeding_type	CHAR(1) NOT NULL COMMENT '급여사료간식분류'	-- F(사료), S(간식)
+		, feeding_record_name	VARCHAR(50) NOT NULL COMMENT '급여이름'
+		, feeding_record_type	VARCHAR(50) COMMENT '급여종류'
+		, feeding_record_amount	VARCHAR(50) COMMENT '급여량'
+		, feeding_record_datetime	DATETIME NOT NULL COMMENT '급여기록등록일시'
+		, feeding_record_image	VARCHAR(255) COMMENT '급여사진'
+		, feeding_record_memo	LONGTEXT COMMENT '급여메모'
+		, feeding_record_delete_datetime	DATETIME COMMENT '급여기록삭제일시'
+		, feeding_record_state	CHAR(1) NOT NULL DEFAULT 'A'	-- A(Activated), D(Deleted)
+) ENGINE=INNODB COMMENT '급여기록'
+
+-- 외래키 제약조건 설정
+ALTER TABLE user
+ADD CONSTRAINT fk_user_family
+FOREIGN KEY(family_id) REFERENCES family(family_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE pet
+ADD CONSTRAINT fk_pet_user
+FOREIGN KEY(user_id) REFERENCES user(user_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE pet
+ADD CONSTRAINT fk_pet_family
+FOREIGN KEY(family_id) REFERENCES family(family_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE symptom_record
+ADD CONSTRAINT fk_symptom_record_pet
+FOREIGN KEY(pet_id) REFERENCES pet(pet_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE prescription_info
+ADD CONSTRAINT fk_prescription_info_user
+FOREIGN KEY(user_id) REFERENCES user(user_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE take_medicine_record
+ADD CONSTRAINT fk_take_medicine_record_prescription_info
+FOREIGN KEY(prescription_info_medicine_id) REFERENCES prescription_info(prescription_info_medicine_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE take_medicine_record
+ADD CONSTRAINT fk_take_medicine_record_pet
+FOREIGN KEY(pet_id) REFERENCES pet(pet_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE walking_record
+ADD CONSTRAINT fk_walking_record_pet
+FOREIGN KEY(pet_id) REFERENCES pet(pet_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE feeding_record
+ADD CONSTRAINT fk_feeding_record_pet
+FOREIGN KEY(pet_id) REFERENCES pet(pet_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+-- 모든 제약 조건 확인(pk, fk)
+SELECT
+	  table_name
+	, constraint_name
+	, constraint_type
+  FROM
+	  information_schema.TABLE_CONSTRAINTS
+ WHERE
+	  TABLE_SCHEMA = 'pettory';
+
+
+-- 더미 데이터 삽입 (외래키로 연결되어 있으므로 쿼리 작성 순서대로 삽입해야 함)
+USE pettory;
+
+-- family 테이블에 더미 데이터 삽입
+INSERT INTO family (family_name, family_insert_datetime, family_delete_datetime, family_state)
+VALUES
+    ('길동이네가좍', '2024-05-12 15:30:10', NULL, 'A'),
+    ('우주현주뽀리', '2024-07-29 21:25:45', NULL, 'A'),
+    ('돼냥이와나', '2024-09-17 13:16:33', NULL, 'A');
+
+-- user 테이블에 더미 데이터 삽입
+INSERT INTO user (family_id, user_email, user_nickname, user_password, user_name, user_birth, user_activation_state, user_vet_yn, user_walking_record_public_yn, user_hospital_info, user_register_datetime, user_withdraw_datetime)
+VALUES
+    (1, 'gildong@google.com', '길동', '1234pass*!', '홍길동', '2001-06-17', 'A', 0, 1, NULL, '2024-05-12 15:24:34', NULL),
+    (2, 'woojoo15@naver.com', '짱우주', 'wj1234$!WJ', '김우주', '1995-07-20', 'A', 0, 1, NULL, '2024-07-27 16:01:45', NULL),
+	(2, 'hyunjooS2@naver.com', '현주', 'hjhjhj111^^', '박현주', '1994-01-12', 'A', 0, 0, NULL, '2024-08-01 21:00:45', NULL),
+	(NULL, 'sungbin_vet@kakao.com', '성빈', 'password012', '황성빈', '1979-11-25', 'A', 1, 0, '동물사랑건강병원', '2024-09-11 14:56:14', NULL),
+	(3, 'ara13@gmail.com', '아라', 'arararara!', '최아라', '2002-03-30', 'W', 0, 1, NULL, '2024-09-17 12:07:04', '2024-09-17 13:16:33');
+
+-- pet 테이블에 더미 데이터 삽입
+INSERT INTO pet (user_id, family_id, pet_type, pet_name, pet_breed, pet_birth, pet_gender, pet_neutering, pet_weight, pet_memo, pet_insert_datetime, pet_delete_datetime, pet_state)
+VALUES
+    (1, 1, 'D', '동동이', '골든 리트리버', '2013-05-12', 'M', 1, 15, '입양 당시 1살 추정, 연어 알러지 있음', '2024-05-12 15:26:09', NULL, 'A'),
+    (2, 2, 'D', '뽀리', '요크셔 테리어', '2023-01-04', 'F', 1, 7, NULL, '2024-07-29 21:31:45', NULL, 'A'),
+    (4, NULL, 'D', '별', '진도믹스', NULL, 'M', 1, 12, '5살 추정', '2024-09-12 14:56:14', NULL, 'A'),
+    (4, NULL, 'D', '달', '진도믹스', NULL, 'F', 1, 12, '5살 추정', '2024-09-12 14:59:14', NULL, 'A'),
+    (4, NULL, 'D', '해', '진도믹스', NULL, 'F', 1, 12, '5살 추정', '2024-09-12 15:05:10', NULL, 'A');
+
+-- symptom_record 테이블에 더미 데이터 삽입
+INSERT INTO symptom_record (pet_id, symptom_record_datetime, symptom_record_type, symptom_record_time, symptom_record_count, symptom_record_image, symptom_record_memo, symptom_record_delete_datetime, symptom_record_state)
+VALUES
+    (1, '2024-06-06 08:00:00', '구토', NULL, '1번', NULL, '사료 먹고 갑자기 토함', NULL, 'A'),
+    (2, '2024-08-21 16:00:00', '혈뇨', NULL, '1번', NULL, '오줌이 약간 빨감, 생식기 닦아주려고 하니까 피함', NULL, 'A'),
+    (2, '2024-07-29 21:31:45', '구역질', NULL, '10번', NULL, '토할 것처럼 구역질 계속 함', NULL, 'A'),
+    (1, '2024-08-05 14:00:00', '절뚝거림', '1일', NULL, NULL, '산책 갔다와서 절뚝거림. 다음날 괜찮아짐', NULL, 'A'),
+    (2, '2024-09-01 02:00:00', '구역질', NULL, '5번 이상', NULL, '자다가 갑자기 구역질 함', NULL, 'A');
+
+-- prescription_info 테이블에 더미 데이터 삽입
+INSERT INTO prescription_info (prescription_info_hospital_name, user_id, prescription_info_pharmacy_name, prescription_info_medicine_name, prescription_info_medicine_type, prescription_info_take_medicine_point, prescription_info_take_medicine_amount, prescription_info_take_medicine_type, prescription_info_insert_datetime, prescription_info_delete_datetime, prescription_info_state)
+VALUES
+    ('동물사랑동물건강병원', 1, NULL, '간보충제', '가루약', '하루1번', '1포', '밥, 간식과 함께 급여 가능', '2024-06-16 10:00:00', NULL, 'A'),
+    ('해피독병원', 2, '동작동물약국', '소독약', '액체', '하루3번', NULL, '휴지에 묻혀서 소독', '2024-08-15 16:00:00', NULL, 'A'),
+    (NULL, 2, '동작동물약국', '발크림', NULL, NULL, NULL, NULL, '2024-08-22 16:00:00', NULL, 'A');
+    
+-- take_medicine_record 테이블에 더미 데이터 삽입
+INSERT INTO take_medicine_record (prescription_info_medicine_id, pet_id, take_medicine_memo, take_medicine_record_insert_datetime, take_medicine_record_delete_datetime, take_medicine_record_state)
+VALUES
+    (1, 1, NULL, '2024-09-01 10:00:00', NULL, 'A'),
+    (2, 2, '소독약바르기', '2024-09-02 11:30:00', NULL, 'A'),
+    (1, 1, '까먹지 말자!', '2024-09-03 10:15:00', NULL, 'A'),
+    (3, 2, NULL, '2024-09-12 14:00:00', NULL, 'A'),
+    (3, 2, NULL, '2024-09-13 16:30:00', NULL, 'A');
+
+-- walking_record 테이블에 더미 데이터 삽입
+INSERT INTO walking_record (pet_id, walking_record_date, walking_record_duration, walking_record_poop_count, walking_record_amount, walking_record_memo, walking_record_image, walking_record_color, walking_record_insert_datetime, walking_record_delete_datetime, walking_record_state)
+VALUES
+    (1, '2024-09-05', 30, 2, NULL, '출근 전 산책', NULL, NULL, '2024-09-05 09:00:00', NULL, 'A'),
+    (2, '2024-09-06', 45, 1, '물 한 컵', NULL, NULL, 'red', '2024-09-06 16:00:00', NULL, 'A'),
+    (3, '2024-09-17', 60, 1, NULL, NULL, NULL, 'blue', '2024-09-07 12:00:00', NULL, 'A'),
+    (4, '2024-09-17', 60, 1, NULL, NULL, NULL, 'blue', '2024-09-07 12:00:00', NULL, 'A'),
+    (5, '2024-09-17', 60, 2, NULL, NULL, NULL, 'blue', '2024-09-07 12:00:00', NULL, 'A');
+
+-- feeding_record 테이블에 더미 데이터 삽입
+INSERT INTO feeding_record (pet_id, feeding_record_feeding_type, feeding_record_name, feeding_record_type, feeding_record_amount, feeding_record_datetime, feeding_record_image, feeding_record_memo, feeding_record_delete_datetime, feeding_record_state)
+VALUES
+    (1, 'F', '오리젠 스몰브리드 독', '건식 사료', '300 그램', '2024-09-05 09:00:00', NULL, NULL, NULL, 'A'),
+    (2, 'F', '그랜마루시 동결건조 막시 닭고기 레시피', '건식 사료', '130 그램', '2024-09-06 16:00:00', NULL, NULL, NULL, 'A'),
+    (3, 'S', '고구마', '찜', '3개', '2024-09-07 12:00:00', NULL, NULL, NULL, 'A'),
+    (4, 'S', '고구마', '찜', '3개', '2024-09-07 12:00:00', NULL, NULL, NULL, 'A'),
+    (5, 'S', '고구마', '찜', '3개', '2024-09-07 12:00:00', NULL, NULL, NULL, 'A');
